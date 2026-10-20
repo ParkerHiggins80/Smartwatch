@@ -1,0 +1,3 @@
+name: watch_pb1_reset
+build:
+  cmake: .

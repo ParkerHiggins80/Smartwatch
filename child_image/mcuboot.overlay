@@ -1,0 +1,51 @@
+/ {
+	aliases {
+		mcuboot-button0 = &pb2_button;
+		mcuboot-led0 = &db_led;
+	};
+
+	watch_buttons {
+		compatible = "gpio-keys";
+		pb2_button: pb2_button {
+			gpios = <&gpio0 24 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+		};
+	};
+
+	watch_leds {
+		compatible = "gpio-leds";
+		db_led: db_led {
+			gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	chosen {
+		zephyr,uart-mcumgr = &cdc_acm_uart0;
+		zephyr,boot-mode = &retention0;
+	};
+};
+
+&gpregret1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	retention0: retention@0 {
+		compatible = "zephyr,retention";
+		status = "okay";
+		reg = <0x0 0x1>;
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&zephyr_udc0 {
+	status = "okay";
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};

@@ -1,1 +1,32 @@
-build*/
+# Zephyr and nRF Connect build output
+build/
+build_*/
+twister-out*/
+compile_commands.json
+
+# Firmware images and debug files outside the build folder
+*.hex
+*.bin
+*.elf
+*.map
+
+# Logs and RTT captures
+*.log
+
+# Signing keys (back these up somewhere safe, never in the repo)
+*.pem
+
+# VS Code personal settings
+.vscode/*
+!.vscode/extensions.json
+
+# macOS
+.DS_Store
+
+# Python leftovers from Zephyr scripts
+__pycache__/
+*.pyc
+
+# Editor temp files
+*.swp
+*~

@@ -1,0 +1,125 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/* ---------- Existing sensor bus ---------- */
+&i2c0 {
+	status = "okay";
+	pinctrl-0 = <&i2c0_default>;
+	pinctrl-1 = <&i2c0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+/* ---------- Display on SPIM3 (32 MHz) ---------- */
+&spi2 {
+	status = "disabled";
+};
+
+&spi3 {
+	status = "okay";
+	compatible = "nordic,nrf-spim";
+	pinctrl-0 = <&spi3_default>;
+	pinctrl-1 = <&spi3_sleep>;
+	pinctrl-names = "default", "sleep";
+
+	/* CS (P0.17) is driven by the driver itself, so no cs-gpios here */
+	co5300: co5300@0 {
+		compatible = "watch,co5300";
+		reg = <0>;
+		spi-max-frequency = <32000000>;
+		width = <466>;
+		height = <466>;
+	};
+};
+
+/* ---------- Touch controller bus (CST820) ---------- */
+/* TWIM1 shares hardware with SPIM1, so spi1 must be off */
+&spi1 {
+	status = "disabled";
+};
+
+&i2c1 {
+	compatible = "nordic,nrf-twim";
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-1 = <&i2c1_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&pinctrl {
+	i2c0_default: i2c0_default {
+		group1 {
+			psels = <NRF_PSEL(TWIM_SDA, 0, 26)>,
+				<NRF_PSEL(TWIM_SCL, 0, 27)>;
+		};
+	};
+
+	i2c0_sleep: i2c0_sleep {
+		group1 {
+			psels = <NRF_PSEL(TWIM_SDA, 0, 26)>,
+				<NRF_PSEL(TWIM_SCL, 0, 27)>;
+			low-power-enable;
+		};
+	};
+
+	/* Display: SCK P1.08 (rework wire to _CLK), MOSI P0.21, high drive */
+	spi3_default: spi3_default {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 1, 8)>,
+				<NRF_PSEL(SPIM_MOSI, 0, 21)>;
+			nordic,drive-mode = <NRF_DRIVE_H0H1>;
+		};
+	};
+
+	spi3_sleep: spi3_sleep {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 1, 8)>,
+				<NRF_PSEL(SPIM_MOSI, 0, 21)>;
+			low-power-enable;
+		};
+	};
+
+	/* TP_SDA = P0.02, TP_SCL = P0.31 */
+	i2c1_default: i2c1_default {
+		group1 {
+			psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
+				<NRF_PSEL(TWIM_SCL, 0, 31)>;
+			bias-pull-up;
+		};
+	};
+
+	i2c1_sleep: i2c1_sleep {
+		group1 {
+			psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
+				<NRF_PSEL(TWIM_SCL, 0, 31)>;
+			low-power-enable;
+		};
+	};
+};
+
+/* Touch control GPIOs + display power enable */
+/ {
+	zephyr,user {
+		tp-rst-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;  /* TP_RST */
+		tp-int-gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;   /* TP_INT */
+		vci-en-gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>;  /* VCI_EN */
+	};
+};
+
+/* ---------- Boot mode flag (shared with MCUboot) ---------- */
+&gpregret1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	retention0: retention@0 {
+		compatible = "zephyr,retention";
+		status = "okay";
+		reg = <0x0 0x1>;
+	};
+};
+
+/ {
+	chosen {
+		zephyr,boot-mode = &retention0;
+		zephyr,display = &co5300;
+	};
+};

@@ -1,0 +1,5 @@
+description: CO5300 AMOLED controller, single-line SPI writes, CS driven by the driver
+
+compatible: "watch,co5300"
+
+include: [spi-device.yaml, display-controller.yaml]

@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "cdc_acm_sample",
+			"path": "../../cdc_acm_sample"
+		}
+	],
+	"settings": {}
+}
